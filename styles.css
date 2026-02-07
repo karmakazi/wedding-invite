@@ -290,6 +290,19 @@ a {
     position: relative;
 }
 
+.couple-portrait {
+    max-width: 600px;
+    margin: 0 auto 3rem;
+    text-align: center;
+}
+
+.couple-portrait img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
 .floral-decoration {
     position: absolute;
     opacity: 0.15;
