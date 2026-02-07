@@ -1,0 +1,32 @@
+<svg width="150" height="150" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- Botanical branch - right accent -->
+  <g stroke="#8B2635" stroke-width="1.5" fill="none">
+    <!-- Main stem -->
+    <path d="M 75 10 Q 77 50, 80 90 Q 82 115, 85 140" stroke-linecap="round"/>
+    
+    <!-- Side branches -->
+    <path d="M 78 40 Q 68 37, 60 40" stroke-linecap="round"/>
+    <path d="M 79 70 Q 88 67, 95 70" stroke-linecap="round"/>
+    <path d="M 81 100 Q 72 97, 65 100" stroke-linecap="round"/>
+    
+    <!-- Main flower -->
+    <circle cx="75" cy="10" r="4"/>
+    <circle cx="71" cy="10" r="2"/>
+    <circle cx="79" cy="10" r="2"/>
+    <circle cx="75" cy="6" r="2"/>
+    <circle cx="75" cy="14" r="2"/>
+    <circle cx="73" cy="8" r="1.5"/>
+    <circle cx="77" cy="12" r="1.5"/>
+  </g>
+  
+  <g stroke="#D98B8E" stroke-width="1" fill="none">
+    <!-- Side flowers -->
+    <circle cx="60" cy="40" r="3"/>
+    <circle cx="58" cy="40" r="1.5"/>
+    <circle cx="62" cy="40" r="1.5"/>
+    
+    <circle cx="95" cy="70" r="3"/>
+    <circle cx="93" cy="70" r="1.5"/>
+    <circle cx="97" cy="70" r="1.5"/>
+  </g>
+</svg>

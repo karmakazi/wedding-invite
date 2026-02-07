@@ -1,0 +1,36 @@
+<svg width="150" height="40" viewBox="0 0 150 40" xmlns="http://www.w3.org/2000/svg">
+  <!-- Botanical divider with center flower -->
+  <g stroke="#D98B8E" stroke-width="1.2" fill="none">
+    <!-- Center flower -->
+    <circle cx="75" cy="20" r="5"/>
+    <circle cx="75" cy="15" r="2.5"/>
+    <circle cx="75" cy="25" r="2.5"/>
+    <circle cx="70" cy="20" r="2.5"/>
+    <circle cx="80" cy="20" r="2.5"/>
+    <circle cx="72" cy="17" r="1.5"/>
+    <circle cx="78" cy="23" r="1.5"/>
+    
+    <!-- Stems connecting -->
+    <path d="M 50 20 Q 60 18, 68 20" stroke-linecap="round"/>
+    <path d="M 82 20 Q 90 18, 100 20" stroke-linecap="round"/>
+  </g>
+  
+  <g stroke="#8B2635" stroke-width="0.8" fill="none">
+    <!-- Side flowers -->
+    <circle cx="40" cy="20" r="3"/>
+    <circle cx="38" cy="20" r="1.5"/>
+    <circle cx="42" cy="20" r="1.5"/>
+    <circle cx="40" cy="18" r="1.5"/>
+    <circle cx="40" cy="22" r="1.5"/>
+    
+    <circle cx="110" cy="20" r="3"/>
+    <circle cx="108" cy="20" r="1.5"/>
+    <circle cx="112" cy="20" r="1.5"/>
+    <circle cx="110" cy="18" r="1.5"/>
+    <circle cx="110" cy="22" r="1.5"/>
+    
+    <!-- Lines -->
+    <line x1="10" y1="20" x2="35" y2="20" stroke-linecap="round"/>
+    <line x1="115" y1="20" x2="140" y2="20" stroke-linecap="round"/>
+  </g>
+</svg>

@@ -1,0 +1,30 @@
+<svg width="150" height="150" viewBox="0 0 150 150" xmlns="http://www.w3.org/2000/svg">
+  <!-- Wildflower with stem - left accent -->
+  <g stroke="#D98B8E" stroke-width="1.5" fill="none">
+    <!-- Main stem -->
+    <path d="M 75 140 Q 70 100, 68 60 Q 67 40, 65 10" stroke-linecap="round"/>
+    
+    <!-- Leaves -->
+    <path d="M 69 95 Q 80 92, 87 95" stroke-linecap="round"/>
+    <path d="M 68 70 Q 58 67, 52 70" stroke-linecap="round"/>
+    <path d="M 67 45 Q 75 42, 82 45" stroke-linecap="round"/>
+    
+    <!-- Main flower -->
+    <circle cx="65" cy="10" r="4"/>
+    <circle cx="61" cy="10" r="2"/>
+    <circle cx="69" cy="10" r="2"/>
+    <circle cx="65" cy="6" r="2"/>
+    <circle cx="65" cy="14" r="2"/>
+    <circle cx="63" cy="8" r="1.5"/>
+    <circle cx="67" cy="12" r="1.5"/>
+  </g>
+  
+  <g stroke="#8B2635" stroke-width="1" fill="none">
+    <!-- Side flowers -->
+    <path d="M 90 120 Q 92 105, 95 90" stroke-linecap="round"/>
+    <circle cx="95" cy="90" r="3"/>
+    <circle cx="93" cy="90" r="1.5"/>
+    <circle cx="97" cy="90" r="1.5"/>
+    <circle cx="95" cy="88" r="1.5"/>
+  </g>
+</svg>
