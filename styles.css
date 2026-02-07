@@ -292,6 +292,8 @@ a {
     max-width: 600px;
     margin: 0 auto 3rem;
     text-align: center;
+    position: relative;
+    z-index: 1;
 }
 
 .couple-portrait img {
@@ -1279,6 +1281,16 @@ a {
     .notes-grid,
     .tips-grid {
         grid-template-columns: 1fr;
+    }
+    
+    /* Hide bottom-right flower and center the top-left one on mobile */
+    .floral-accent.bottom-right {
+        display: none;
+    }
+    
+    .floral-accent.top-left {
+        left: 50%;
+        transform: translateX(-50%);
     }
 }
 
