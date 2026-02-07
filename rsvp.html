@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP - Andrea & Jeff</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="main-nav">
+        <div class="nav-container">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="story.html" class="nav-link">Our Story</a>
+            <a href="details.html" class="nav-link">Details</a>
+            <a href="schedule.html" class="nav-link">Schedule</a>
+            <a href="rsvp.html" class="nav-link active">RSVP</a>
+            <a href="photos.html" class="nav-link">Photos</a>
+        </div>
+    </nav>
+
+    <main class="page-content">
+        <div class="page-header">
+            <h1>RSVP</h1>
+            <div class="floral-divider">
+                <svg viewBox="0 0 100 20" class="divider-svg">
+                    <circle cx="50" cy="10" r="8" fill="#D98B8E"/>
+                    <circle cx="35" cy="10" r="5" fill="#F4DDD4"/>
+                    <circle cx="65" cy="10" r="5" fill="#F4DDD4"/>
+                    <circle cx="20" cy="10" r="3" fill="#8B2635" opacity="0.5"/>
+                    <circle cx="80" cy="10" r="3" fill="#8B2635" opacity="0.5"/>
+                </svg>
+            </div>
+            <p class="page-subtitle">Please respond by April 15, 2026</p>
+        </div>
+
+        <div class="container">
+            <div class="form-container">
+                <form id="rsvpForm" class="rsvp-form">
+                    <div class="form-section">
+                        <h2>Your Information</h2>
+                        
+                        <div class="form-group">
+                            <label for="fullName">Full Name *</label>
+                            <input type="text" id="fullName" name="fullName" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" name="email" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Phone Number</label>
+                            <input type="tel" id="phone" name="phone">
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>Attendance</h2>
+                        
+                        <div class="form-group radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="attendance" value="attending" required>
+                                <span>Joyfully accepts</span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="attendance" value="not-attending">
+                                <span>Regretfully declines</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="guestCount">Number of Guests (including yourself) *</label>
+                            <input type="number" id="guestCount" name="guestCount" min="1" max="10" value="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="guestNames">Guest Names</label>
+                            <textarea id="guestNames" name="guestNames" rows="3" placeholder="Please list all guests in your party"></textarea>
+                            <small>If bringing additional guests, please list their names</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>Dietary Restrictions</h2>
+                        
+                        <div class="form-group">
+                            <label for="dietaryRestrictions">Please let us know of any dietary restrictions or allergies</label>
+                            <textarea id="dietaryRestrictions" name="dietaryRestrictions" rows="4" placeholder="E.g., vegetarian, vegan, gluten-free, nut allergy, etc."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2>Music Request</h2>
+                        
+                        <div class="form-group">
+                            <label for="songRequest">Request a Song</label>
+                            <input type="text" id="songRequest" name="songRequest" placeholder="Song title and artist">
+                            <small>Help us create the perfect playlist for the dance floor!</small>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="specialMessage">Special Message for the Couple</label>
+                            <textarea id="specialMessage" name="specialMessage" rows="4" placeholder="Share your well wishes, memories, or excitement for the big day"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Submit RSVP</button>
+                    </div>
+                </form>
+
+                <div id="successMessage" class="success-message" style="display: none;">
+                    <h3>Thank You!</h3>
+                    <p>Your RSVP has been received. We can't wait to celebrate with you!</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <p>&copy; 2026 Andrea & Jeff</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
