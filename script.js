@@ -1,4 +1,10 @@
 // ===========================
+// SUPABASE INITIALIZATION
+// ===========================
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ===========================
 // RSVP FORM HANDLING
 // ===========================
 document.addEventListener('DOMContentLoaded', function() {
@@ -9,56 +15,64 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             
             // Get form data
-            const formData = new FormData(rsvpForm);
-            
-            // Set the replyto field to the guest's email
-            const guestEmail = document.getElementById('email').value;
-            formData.set('_replyto', guestEmail);
-            
-            // Check if message should be shared
-            const shareMessage = document.getElementById('shareMessage').checked;
-            const specialMessage = document.getElementById('specialMessage').value;
             const fullName = document.getElementById('fullName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const attendance = document.querySelector('input[name="attendance"]:checked')?.value;
+            const guestCount = parseInt(document.getElementById('guestCount').value);
+            const guestNames = document.getElementById('guestNames').value;
+            const dietaryRestrictions = document.getElementById('dietaryRestrictions').value;
+            const songRequest = document.getElementById('songRequest').value;
+            const specialMessage = document.getElementById('specialMessage').value;
+            const shareMessage = document.getElementById('shareMessage').checked;
             
             try {
-                // Submit to Formspree
-                const response = await fetch(rsvpForm.action, {
-                    method: 'POST',
-                    body: formData,
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
+                // Save to rsvp_submissions table
+                const { data: rsvpData, error: rsvpError } = await supabaseClient
+                    .from('rsvp_submissions')
+                    .insert([{
+                        full_name: fullName,
+                        email: email,
+                        phone: phone,
+                        attendance: attendance,
+                        guest_count: guestCount,
+                        guest_names: guestNames,
+                        dietary_restrictions: dietaryRestrictions,
+                        song_request: songRequest,
+                        special_message: specialMessage,
+                        share_message: shareMessage
+                    }]);
                 
-                if (response.ok) {
-                    // If user wants to share message and has written one, save it
-                    if (shareMessage && specialMessage.trim()) {
-                        const messages = JSON.parse(localStorage.getItem('guestMessages') || '[]');
-                        messages.push({
+                if (rsvpError) throw rsvpError;
+                
+                // If user wants to share message and has written one, save to guest_messages
+                if (shareMessage && specialMessage.trim()) {
+                    const { error: messageError } = await supabaseClient
+                        .from('guest_messages')
+                        .insert([{
                             name: fullName,
                             message: specialMessage,
-                            timestamp: new Date().toISOString()
-                        });
-                        localStorage.setItem('guestMessages', JSON.stringify(messages));
-                        
-                        // Reload messages display
-                        displayMessages();
-                    }
+                            email: email
+                        }]);
                     
-                    // Show success message
-                    rsvpForm.style.display = 'none';
-                    document.getElementById('successMessage').style.display = 'block';
+                    if (messageError) throw messageError;
                     
-                    // Scroll to success message
-                    document.getElementById('successMessage').scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center' 
-                    });
-                } else {
-                    alert('Oops! There was a problem submitting your RSVP. Please try again or contact us directly.');
+                    // Reload messages display
+                    await displayMessages();
                 }
+                
+                // Show success message
+                rsvpForm.style.display = 'none';
+                document.getElementById('successMessage').style.display = 'block';
+                
+                // Scroll to success message
+                document.getElementById('successMessage').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error submitting RSVP:', error);
                 alert('Oops! There was a problem submitting your RSVP. Please try again or contact us directly.');
             }
         });
@@ -68,33 +82,44 @@ document.addEventListener('DOMContentLoaded', function() {
     displayMessages();
 });
 
-// Function to display guest messages
-function displayMessages() {
+// Function to display guest messages from Supabase
+async function displayMessages() {
     const messagesContainer = document.getElementById('messagesContainer');
     const noMessagesText = document.getElementById('noMessages');
     
     if (!messagesContainer) return;
     
-    const messages = JSON.parse(localStorage.getItem('guestMessages') || '[]');
-    
-    // Keep the sample messages and add real ones
-    const existingCards = messagesContainer.querySelectorAll('.message-card');
-    
-    if (messages.length > 0) {
-        // Add new messages
-        messages.forEach(msg => {
-            const messageCard = document.createElement('div');
-            messageCard.className = 'message-card';
-            messageCard.innerHTML = `
-                <p class="message-text">"${escapeHtml(msg.message)}"</p>
-                <p class="message-author">— ${escapeHtml(msg.name)}</p>
-            `;
-            messagesContainer.appendChild(messageCard);
-        });
+    try {
+        // Fetch messages from Supabase
+        const { data: messages, error } = await supabaseClient
+            .from('guest_messages')
+            .select('*')
+            .order('created_at', { ascending: false });
         
-        if (noMessagesText) {
-            noMessagesText.style.display = 'none';
+        if (error) throw error;
+        
+        // Clear existing messages (except sample ones)
+        const dynamicMessages = messagesContainer.querySelectorAll('.message-card.dynamic');
+        dynamicMessages.forEach(card => card.remove());
+        
+        // Add messages from database
+        if (messages && messages.length > 0) {
+            messages.forEach(msg => {
+                const messageCard = document.createElement('div');
+                messageCard.className = 'message-card dynamic';
+                messageCard.innerHTML = `
+                    <p class="message-text">"${escapeHtml(msg.message)}"</p>
+                    <p class="message-author">— ${escapeHtml(msg.name)}</p>
+                `;
+                messagesContainer.appendChild(messageCard);
+            });
+            
+            if (noMessagesText) {
+                noMessagesText.style.display = 'none';
+            }
         }
+    } catch (error) {
+        console.error('Error loading messages:', error);
     }
 }
 

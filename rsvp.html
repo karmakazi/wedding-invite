@@ -8,6 +8,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+    
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
 </head>
 <body>
     <nav class="main-nav">
@@ -32,21 +36,7 @@
 
         <div class="container">
             <div class="form-container">
-                <form id="rsvpForm" class="rsvp-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
-                    <input type="hidden" name="_subject" value="RSVP Derrick Ellis Wedding">
-                    <input type="hidden" name="_replyto" value="">
-                    <input type="hidden" name="_autoresponse" value="Thank you for your RSVP! 
-
-We're so excited to celebrate with you on Friday, May 29, 2026 at Stouffville Museum (14732 Woodbine Ave, Whitchurch-Stouffville, ON L4A 2K9).
-
-Arrival: 5:00 PM
-Ceremony: 6:15 PM (outdoor ceremony)
-Reception: Following ceremony
-
-If you have any questions, please don't hesitate to reach out.
-
-With love,
-Andrea & Jeff">
+                <form id="rsvpForm" class="rsvp-form">
                     <div class="form-section">
                         <h2>Your Information</h2>
                         
