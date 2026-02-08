@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP Admin - Andrea & Jeff</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+    
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
+    
+    <style>
+        .admin-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .login-container {
+            max-width: 500px;
+            margin: 4rem auto;
+            padding: 3rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        
+        .login-container h1 {
+            text-align: center;
+            color: var(--primary-red);
+            margin-bottom: 2rem;
+        }
+        
+        .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        .login-form input {
+            padding: 1rem;
+            border: 1px solid var(--accent-pink);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .login-form button {
+            padding: 1rem;
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .login-form button:hover {
+            background: var(--deep-rose);
+        }
+        
+        .error-message {
+            color: var(--primary-red);
+            text-align: center;
+            margin-top: 1rem;
+            display: none;
+        }
+        
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--accent-pink);
+        }
+        
+        .admin-header h1 {
+            color: var(--primary-red);
+            margin: 0;
+        }
+        
+        .logout-btn {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent-pink);
+            color: var(--primary-red);
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background: var(--deep-rose);
+            color: white;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--primary-red);
+            font-family: 'Cormorant Garamond', serif;
+        }
+        
+        .stat-label {
+            color: var(--text-dark);
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .rsvp-table {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+        
+        .table-controls {
+            padding: 1rem 1.5rem;
+            background: var(--pale-pink);
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 1px solid var(--accent-pink);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn.active {
+            background: var(--primary-red);
+            color: white;
+            border-color: var(--primary-red);
+        }
+        
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--accent-pink);
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th {
+            background: var(--primary-red);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 0.9rem;
+        }
+        
+        tr:hover {
+            background: var(--pale-pink);
+        }
+        
+        .attendance-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .attending {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .not-attending {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+        
+        .no-rsvps {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+        
+        .expandable {
+            cursor: pointer;
+        }
+        
+        .details-row {
+            display: none;
+        }
+        
+        .details-row.show {
+            display: table-row;
+        }
+        
+        .details-cell {
+            background: #f9f9f9;
+            padding: 1.5rem;
+        }
+        
+        .detail-group {
+            margin-bottom: 1rem;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: var(--primary-red);
+            margin-bottom: 0.25rem;
+        }
+        
+        .detail-content {
+            color: var(--text-dark);
+            white-space: pre-wrap;
+        }
+        
+        .export-btn {
+            padding: 0.5rem 1rem;
+            background: var(--primary-red);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .export-btn:hover {
+            background: var(--deep-rose);
+        }
+        
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 0 1rem;
+            }
+            
+            table {
+                font-size: 0.8rem;
+            }
+            
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <h1>RSVP Admin Access</h1>
+        <form id="loginForm" class="login-form">
+            <input type="password" id="passwordInput" placeholder="Enter password" required>
+            <button type="submit">Login</button>
+        </form>
+        <p class="error-message" id="errorMessage">Incorrect password. Please try again.</p>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div id="adminDashboard" style="display: none;">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h1>RSVP Dashboard</h1>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRsvps">0</div>
+                    <div class="stat-label">Total RSVPs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="attendingCount">0</div>
+                    <div class="stat-label">Attending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="notAttendingCount">0</div>
+                    <div class="stat-label">Not Attending</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalGuests">0</div>
+                    <div class="stat-label">Total Guests</div>
+                </div>
+            </div>
+
+            <div class="rsvp-table">
+                <div class="table-controls">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="attending">Attending</button>
+                    <button class="filter-btn" data-filter="not-attending">Not Attending</button>
+                    <input type="text" id="searchBox" class="search-box" placeholder="Search by name or email...">
+                    <button class="export-btn" id="exportBtn">Export CSV</button>
+                </div>
+
+                <div id="tableContent">
+                    <div class="loading">Loading RSVPs...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin-rsvp.js"></script>
+</body>
+</html>
