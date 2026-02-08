@@ -116,6 +116,13 @@ Andrea & Jeff">
                             <label for="specialMessage">Special Message for the Couple</label>
                             <textarea id="specialMessage" name="specialMessage" rows="4" placeholder="Share your well wishes, memories, or excitement for the big day"></textarea>
                         </div>
+                        
+                        <div class="form-group">
+                            <label class="radio-label">
+                                <input type="checkbox" name="shareMessage" value="yes" id="shareMessage">
+                                <span>Share my message publicly on the website</span>
+                            </label>
+                        </div>
                     </div>
 
                     <div class="form-actions">
@@ -128,6 +135,25 @@ Andrea & Jeff">
                     <p>Your RSVP has been received. We can't wait to celebrate with you!</p>
                 </div>
             </div>
+            
+            <section class="messages-wall">
+                <h2>Messages from Our Guests</h2>
+                <p class="section-intro">See what our loved ones are saying about our special day!</p>
+                
+                <div id="messagesContainer" class="messages-grid">
+                    <div class="message-card">
+                        <p class="message-text">"We are so excited to celebrate this beautiful day with you both! Wishing you a lifetime of love and happiness."</p>
+                        <p class="message-author">— Sarah & Michael</p>
+                    </div>
+                    
+                    <div class="message-card">
+                        <p class="message-text">"Can't wait to see you tie the knot! You two are perfect together and we're honored to be part of your celebration."</p>
+                        <p class="message-author">— The Johnson Family</p>
+                    </div>
+                    
+                    <p class="no-messages" id="noMessages" style="display: none;">Be the first to share a message!</p>
+                </div>
+            </section>
         </div>
     </main>
 

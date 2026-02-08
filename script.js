@@ -15,6 +15,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const guestEmail = document.getElementById('email').value;
             formData.set('_replyto', guestEmail);
             
+            // Check if message should be shared
+            const shareMessage = document.getElementById('shareMessage').checked;
+            const specialMessage = document.getElementById('specialMessage').value;
+            const fullName = document.getElementById('fullName').value;
+            
             try {
                 // Submit to Formspree
                 const response = await fetch(rsvpForm.action, {
@@ -26,6 +31,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
                 
                 if (response.ok) {
+                    // If user wants to share message and has written one, save it
+                    if (shareMessage && specialMessage.trim()) {
+                        const messages = JSON.parse(localStorage.getItem('guestMessages') || '[]');
+                        messages.push({
+                            name: fullName,
+                            message: specialMessage,
+                            timestamp: new Date().toISOString()
+                        });
+                        localStorage.setItem('guestMessages', JSON.stringify(messages));
+                        
+                        // Reload messages display
+                        displayMessages();
+                    }
+                    
                     // Show success message
                     rsvpForm.style.display = 'none';
                     document.getElementById('successMessage').style.display = 'block';
@@ -44,7 +63,47 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Load and display messages on page load
+    displayMessages();
 });
+
+// Function to display guest messages
+function displayMessages() {
+    const messagesContainer = document.getElementById('messagesContainer');
+    const noMessagesText = document.getElementById('noMessages');
+    
+    if (!messagesContainer) return;
+    
+    const messages = JSON.parse(localStorage.getItem('guestMessages') || '[]');
+    
+    // Keep the sample messages and add real ones
+    const existingCards = messagesContainer.querySelectorAll('.message-card');
+    
+    if (messages.length > 0) {
+        // Add new messages
+        messages.forEach(msg => {
+            const messageCard = document.createElement('div');
+            messageCard.className = 'message-card';
+            messageCard.innerHTML = `
+                <p class="message-text">"${escapeHtml(msg.message)}"</p>
+                <p class="message-author">— ${escapeHtml(msg.name)}</p>
+            `;
+            messagesContainer.appendChild(messageCard);
+        });
+        
+        if (noMessagesText) {
+            noMessagesText.style.display = 'none';
+        }
+    }
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
 
 // ===========================
 // PHOTO UPLOAD HANDLING
