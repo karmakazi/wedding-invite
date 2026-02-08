@@ -5,43 +5,43 @@ document.addEventListener('DOMContentLoaded', function() {
     const rsvpForm = document.getElementById('rsvpForm');
     
     if (rsvpForm) {
-        rsvpForm.addEventListener('submit', function(e) {
+        rsvpForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // Get form data
-            const formData = {
-                fullName: document.getElementById('fullName').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                attendance: document.querySelector('input[name="attendance"]:checked')?.value,
-                guestCount: document.getElementById('guestCount').value,
-                guestNames: document.getElementById('guestNames').value,
-                dietaryRestrictions: document.getElementById('dietaryRestrictions').value,
-                songRequest: document.getElementById('songRequest').value,
-                specialMessage: document.getElementById('specialMessage').value
-            };
+            const formData = new FormData(rsvpForm);
             
-            // Store in localStorage (in a real app, this would be sent to a server)
-            const existingRSVPs = JSON.parse(localStorage.getItem('rsvps') || '[]');
-            existingRSVPs.push({
-                ...formData,
-                timestamp: new Date().toISOString()
-            });
-            localStorage.setItem('rsvps', JSON.stringify(existingRSVPs));
+            // Set the replyto field to the guest's email
+            const guestEmail = document.getElementById('email').value;
+            formData.set('_replyto', guestEmail);
             
-            // Log to console (for demonstration)
-            console.log('RSVP Submitted:', formData);
-            console.log('Note: In production, this would be sent to a backend server.');
-            
-            // Show success message
-            rsvpForm.style.display = 'none';
-            document.getElementById('successMessage').style.display = 'block';
-            
-            // Scroll to success message
-            document.getElementById('successMessage').scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
-            });
+            try {
+                // Submit to Formspree
+                const response = await fetch(rsvpForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    // Show success message
+                    rsvpForm.style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'block';
+                    
+                    // Scroll to success message
+                    document.getElementById('successMessage').scrollIntoView({ 
+                        behavior: 'smooth', 
+                        block: 'center' 
+                    });
+                } else {
+                    alert('Oops! There was a problem submitting your RSVP. Please try again or contact us directly.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Oops! There was a problem submitting your RSVP. Please try again or contact us directly.');
+            }
         });
     }
 });
