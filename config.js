@@ -4,3 +4,6 @@
 
 const SUPABASE_URL = 'https://txbsuyzfhlcabcuplspr.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_HLhU0ThlGnJF6If-cZAS3Q_lXgSlqEK';
+
+/** Storage bucket for guest photo uploads (create in Supabase Dashboard → Storage). */
+const SUPABASE_PHOTOS_BUCKET = 'guest-photos';

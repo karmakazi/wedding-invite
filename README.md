@@ -63,10 +63,9 @@ To make the website accessible to your guests:
 
 ### RSVP and Photo Upload Functionality
 
-**Current Implementation:**
-- The RSVP form and photo upload currently store data in the browser's localStorage
-- This is for demonstration purposes only and **will not persist across devices**
-- Data is logged to the browser console for testing
+**Current implementation:**
+- **RSVP** and **guest messages** are stored in **Supabase** (see `DATABASE_SETUP.md`).
+- **Guest photos** upload to **Supabase Storage** bucket `guest-photos` (same doc has setup steps).
 
 **For Production Use:**
 You'll need to implement a backend solution. Here are some options:

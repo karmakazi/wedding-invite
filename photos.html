@@ -59,6 +59,8 @@
                     <p>Your photos have been uploaded successfully. We appreciate you sharing these special moments with us!</p>
                     <button type="button" class="btn-secondary" id="uploadMore">Upload More Photos</button>
                 </div>
+
+                <div id="uploadError" class="upload-error" style="display: none;" role="alert"></div>
             </div>
 
             <div class="photo-tips">
@@ -84,7 +86,7 @@
 
             <div class="photo-gallery-section">
                 <h2>Wedding Gallery</h2>
-                <p class="gallery-note">Photos from the wedding will appear here. Check back after May 29th to see all the wonderful memories we've created together!</p>
+                <p id="galleryNote" class="gallery-note">Photos from the wedding will appear here. Check back after May 29th to see all the wonderful memories we've created together!</p>
                 
                 <div id="photoGallery" class="photo-gallery">
                     <!-- Sample illustrated gallery items -->
@@ -143,6 +145,8 @@
         <p>&copy; 2026 Andrea & Jeff</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -1182,6 +1182,18 @@ a {
     flex-wrap: wrap;
 }
 
+.upload-error {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: 5px;
+    background-color: #fdeaea;
+    border: 1px solid var(--primary-red);
+    color: var(--primary-red);
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: center;
+}
+
 .photo-tips {
     margin: 5rem 0;
 }

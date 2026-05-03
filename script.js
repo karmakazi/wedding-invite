@@ -1,8 +1,26 @@
 // ===========================
 // SUPABASE INITIALIZATION
 // ===========================
-const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Never throw at parse time: if the CDN or keys fail, the rest of the UI still needs event listeners.
+let supabaseClient = null;
+
+(function initSupabaseClient() {
+    try {
+        if (typeof supabase === 'undefined') {
+            console.error(
+                '[Wedding site] Supabase JS did not load. Check network/ad blockers. Script order must be: @supabase/supabase-js → config.js → script.js. Prefer opening the site via http://localhost (not file://).'
+            );
+            return;
+        }
+        if (typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined') {
+            console.error('[Wedding site] config.js must define SUPABASE_URL and SUPABASE_ANON_KEY.');
+            return;
+        }
+        supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (err) {
+        console.error('[Wedding site] Supabase createClient failed:', err);
+    }
+})();
 
 // ===========================
 // RSVP FORM HANDLING
@@ -13,7 +31,14 @@ document.addEventListener('DOMContentLoaded', function() {
     if (rsvpForm) {
         rsvpForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
+            if (!supabaseClient) {
+                alert(
+                    'Unable to reach the RSVP service. Check that the page loaded fully (see browser Console), then refresh and try again.'
+                );
+                return;
+            }
+
             // Get form data
             const fullName = document.getElementById('fullName').value;
             const email = document.getElementById('email').value;
@@ -87,7 +112,7 @@ async function displayMessages() {
     const messagesContainer = document.getElementById('messagesContainer');
     const noMessagesText = document.getElementById('noMessages');
     
-    if (!messagesContainer) return;
+    if (!messagesContainer || !supabaseClient) return;
     
     try {
         // Fetch messages from Supabase
@@ -130,6 +155,62 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+const MAX_PHOTO_BYTES = 12 * 1024 * 1024; // 12 MB per file (adjust in Supabase project if needed)
+const GUEST_PHOTO_PREFIX = 'guest';
+
+function sanitizePhotoFileName(name) {
+    const base = name.replace(/^.*[\\/]/, '');
+    const cleaned = base.replace(/[^a-zA-Z0-9._-]/g, '_');
+    return cleaned.slice(0, 120) || 'photo.jpg';
+}
+
+function makeGuestPhotoPath(fileName) {
+    const id =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+    return `${GUEST_PHOTO_PREFIX}/${id}-${sanitizePhotoFileName(fileName)}`;
+}
+
+async function loadGuestPhotoGallery() {
+    const gallery = document.getElementById('photoGallery');
+    const note = document.getElementById('galleryNote');
+    if (!gallery || !supabaseClient || typeof SUPABASE_PHOTOS_BUCKET === 'undefined') return;
+
+    try {
+        const { data: files, error } = await supabaseClient.storage
+            .from(SUPABASE_PHOTOS_BUCKET)
+            .list(GUEST_PHOTO_PREFIX, { limit: 200 });
+
+        if (error) throw error;
+
+        const imageFiles = (files || []).filter(
+            (f) => f.metadata && typeof f.metadata.size === 'number' && f.metadata.size > 0
+        );
+
+        if (imageFiles.length === 0) return;
+
+        gallery.replaceChildren();
+        imageFiles.forEach((f) => {
+            const path = `${GUEST_PHOTO_PREFIX}/${f.name}`;
+            const { data: pub } = supabaseClient.storage
+                .from(SUPABASE_PHOTOS_BUCKET)
+                .getPublicUrl(path);
+            const wrap = document.createElement('div');
+            wrap.className = 'gallery-item';
+            const img = document.createElement('img');
+            img.src = pub.publicUrl;
+            img.alt = `Wedding guest photo: ${f.name}`;
+            img.loading = 'lazy';
+            wrap.appendChild(img);
+            gallery.appendChild(wrap);
+        });
+        if (note) note.style.display = 'none';
+    } catch (err) {
+        console.warn('Could not load guest photo gallery:', err);
+    }
+}
+
 // ===========================
 // PHOTO UPLOAD HANDLING
 // ===========================
@@ -143,12 +224,31 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelUpload = document.getElementById('cancelUpload');
     const uploadSuccess = document.getElementById('uploadSuccess');
     const uploadMore = document.getElementById('uploadMore');
+    const uploadError = document.getElementById('uploadError');
     
     let selectedFiles = [];
-    
+    const submitDefaultLabel = submitPhotos ? submitPhotos.textContent : 'Upload Photos';
+
+    function hideUploadError() {
+        if (uploadError) {
+            uploadError.style.display = 'none';
+            uploadError.textContent = '';
+        }
+    }
+
+    function showUploadError(message) {
+        if (uploadError) {
+            uploadError.textContent = message;
+            uploadError.style.display = 'block';
+        } else {
+            alert(message);
+        }
+    }
+
     if (uploadBtn && photoUpload) {
-        // Click upload button
-        uploadBtn.addEventListener('click', function() {
+        // Click upload button (stopPropagation so the upload-box handler does not open a second dialog)
+        uploadBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
             photoUpload.click();
         });
         
@@ -192,41 +292,112 @@ document.addEventListener('DOMContentLoaded', function() {
                 uploadBox.style.display = 'block';
                 uploadPreview.style.display = 'none';
                 photoUpload.value = '';
+                hideUploadError();
             });
         }
         
-        // Submit photos
+        // Submit photos → Supabase Storage
         if (submitPhotos) {
-            submitPhotos.addEventListener('click', function() {
-                // In a real application, this would upload to a server
-                console.log('Uploading photos:', selectedFiles);
-                console.log('Note: In production, these would be uploaded to a server or cloud storage.');
-                
-                // Store file info in localStorage (not the actual files, just metadata)
-                const photoMetadata = selectedFiles.map(file => ({
-                    name: file.name,
-                    size: file.size,
-                    type: file.type,
-                    timestamp: new Date().toISOString()
-                }));
-                
-                const existingPhotos = JSON.parse(localStorage.getItem('uploadedPhotos') || '[]');
-                existingPhotos.push(...photoMetadata);
-                localStorage.setItem('uploadedPhotos', JSON.stringify(existingPhotos));
-                
-                // Show success
+            submitPhotos.addEventListener('click', async function() {
+                hideUploadError();
+
+                if (!selectedFiles.length) {
+                    showUploadError('Please choose at least one photo to upload.');
+                    return;
+                }
+
+                if (!supabaseClient) {
+                    showUploadError(
+                        'Photo upload could not start (connection not ready). Open DevTools → Console for errors, confirm script order on this page is Supabase → config.js → script.js, then refresh.'
+                    );
+                    return;
+                }
+
+                if (typeof SUPABASE_PHOTOS_BUCKET === 'undefined') {
+                    showUploadError('Photo uploads are not configured. Please try again later.');
+                    return;
+                }
+
+                const oversized = selectedFiles.filter((f) => f.size > MAX_PHOTO_BYTES);
+                if (oversized.length) {
+                    showUploadError(
+                        `Each photo must be under ${Math.round(MAX_PHOTO_BYTES / (1024 * 1024))} MB. Please resize or remove: ${oversized.map((f) => f.name).join(', ')}`
+                    );
+                    return;
+                }
+
+                if (!previewGrid || !uploadPreview || !uploadSuccess) {
+                    showUploadError('Page is missing upload elements. Refresh and try again.');
+                    return;
+                }
+
+                submitPhotos.disabled = true;
+                submitPhotos.textContent = 'Uploading…';
+
+                const failures = [];
+                let firstErrorMessage = null;
+
+                try {
+                    for (const file of selectedFiles) {
+                        const path = makeGuestPhotoPath(file.name);
+                        const { error } = await supabaseClient.storage
+                            .from(SUPABASE_PHOTOS_BUCKET)
+                            .upload(path, file, {
+                                cacheControl: '3600',
+                                upsert: false,
+                                contentType: file.type || 'application/octet-stream'
+                            });
+
+                        if (error) {
+                            console.error('Upload failed:', path, error);
+                            failures.push(file.name);
+                            if (!firstErrorMessage) {
+                                firstErrorMessage = error.message || String(error);
+                            }
+                        }
+                    }
+                } catch (unexpected) {
+                    console.error('Upload exception:', unexpected);
+                    submitPhotos.disabled = false;
+                    submitPhotos.textContent = submitDefaultLabel;
+                    showUploadError(
+                        unexpected && unexpected.message
+                            ? `Upload failed: ${unexpected.message}`
+                            : 'Something went wrong while uploading. Check the browser Console or try again.'
+                    );
+                    return;
+                }
+
+                submitPhotos.disabled = false;
+                submitPhotos.textContent = submitDefaultLabel;
+
+                if (failures.length === selectedFiles.length) {
+                    showUploadError(
+                        firstErrorMessage
+                            ? `Upload failed: ${firstErrorMessage} If this mentions “row-level security” or “bucket”, complete the Storage bucket and policies in Supabase (see DATABASE_SETUP.md).`
+                            : 'Your photos could not be uploaded. Please check your connection and try again, or contact us if this keeps happening.'
+                    );
+                    return;
+                }
+
+                if (failures.length) {
+                    showUploadError(
+                        `Some files could not be uploaded (${failures.join(', ')}). The rest were saved successfully.`
+                    );
+                }
+
                 uploadPreview.style.display = 'none';
                 uploadSuccess.style.display = 'block';
-                
-                // Reset
+
                 selectedFiles = [];
                 previewGrid.innerHTML = '';
                 photoUpload.value = '';
-                
-                // Scroll to success
-                uploadSuccess.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center' 
+
+                await loadGuestPhotoGallery();
+
+                uploadSuccess.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center'
                 });
             });
         }
@@ -236,7 +407,16 @@ document.addEventListener('DOMContentLoaded', function() {
             uploadMore.addEventListener('click', function() {
                 uploadSuccess.style.display = 'none';
                 uploadBox.style.display = 'block';
+                hideUploadError();
             });
+        }
+
+        loadGuestPhotoGallery();
+
+        if (!supabaseClient) {
+            showUploadError(
+                'Photo uploads are offline (Supabase did not initialize). Open DevTools → Console, fix any errors, then refresh. Use http://localhost if opening as a file does not load scripts.'
+            );
         }
     }
     
@@ -251,9 +431,11 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Filter for images only
-        const imageFiles = filesArray.filter(file => 
-            file.type.startsWith('image/')
+        // Filter for images only (HEIC often has empty MIME type in the browser)
+        const imageFiles = filesArray.filter(
+            (file) =>
+                file.type.startsWith('image/') ||
+                /\.(jpe?g|png|gif|webp|heic|heif|bmp|tif{1,2})$/i.test(file.name)
         );
         
         if (imageFiles.length === 0) {
@@ -271,6 +453,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Display preview function
     function displayPreview() {
+        if (!previewGrid || !uploadBox || !uploadPreview) {
+            console.error('[Wedding site] Missing preview DOM nodes.');
+            return;
+        }
         previewGrid.innerHTML = '';
         
         selectedFiles.forEach((file, index) => {
